@@ -1,0 +1,4 @@
+DuckQuery
+=========
+
+Duckduckgo java library
