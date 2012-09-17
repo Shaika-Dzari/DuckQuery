@@ -13,6 +13,7 @@
 package net.nakama.duckquery.net.response;
 
 import java.util.Calendar;
+import java.util.List;
 
 import net.nakama.duckquery.net.response.api.RelatedTopic;
 import net.nakama.duckquery.net.response.api.Result;
@@ -63,7 +64,7 @@ public class ZeroClickResponse {
 	 *  Instead of an array, I use an object to wrap the result and the topic.
 	 */
 	private RelatedTopic relatedTopics;
-	private Result[] results = null;
+	private List<Result> results = null;
 	private String type = null;
 	
 	public ZeroClickResponse() {
@@ -267,20 +268,6 @@ public class ZeroClickResponse {
 	}
 
 	/**
-	 * @return the results
-	 */
-	public Result[] getResults() {
-		return results;
-	}
-
-	/**
-	 * @param results the results to set
-	 */
-	public void setResults(Result[] results) {
-		this.results = results;
-	}
-
-	/**
 	 * @return the type
 	 */
 	public String getType() {
@@ -292,6 +279,20 @@ public class ZeroClickResponse {
 	 */
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	/**
+	 * @return the results
+	 */
+	public List<Result> getResults() {
+		return results;
+	}
+
+	/**
+	 * @param results the results to set
+	 */
+	public void setResults(List<Result> results) {
+		this.results = results;
 	}
 	
 }

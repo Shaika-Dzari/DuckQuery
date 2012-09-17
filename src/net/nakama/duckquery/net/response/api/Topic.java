@@ -12,9 +12,11 @@
  */ 
 package net.nakama.duckquery.net.response.api;
 
+import java.util.List;
+
 public class Topic {
 	private String name = null;
-	private Result[] results = null;
+	private List<Result> results = null;
 	
 	/**
 	 * @return the name
@@ -28,16 +30,17 @@ public class Topic {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
 	/**
 	 * @return the results
 	 */
-	public Result[] getResults() {
+	public List<Result> getResults() {
 		return results;
 	}
 	/**
 	 * @param results the results to set
 	 */
-	public void setResults(Result[] results) {
+	public void setResults(List<Result> results) {
 		this.results = results;
 	}
 	
