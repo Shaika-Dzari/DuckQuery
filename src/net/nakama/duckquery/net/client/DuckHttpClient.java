@@ -14,7 +14,7 @@ package net.nakama.duckquery.net.client;
 
 public class DuckHttpClient extends HttpClient {
 
-	private static final String DDG_API_URL = "http://api.duckduckgo.com/?";
+	private static final String DDG_API_URL = "https://api.duckduckgo.com/?";
 	private static final String DDG_API_STD_ARGS = "&format=json&no_redirect&no_html=1";
 	
 	@Override

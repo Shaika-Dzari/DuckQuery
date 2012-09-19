@@ -12,34 +12,72 @@
  */ 
 package net.nakama.duckquery.net.response;
 
-import java.io.IOException;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.nakama.duckquery.net.response.api.DDGApiField;
 import net.nakama.duckquery.net.response.api.Icon;
 import net.nakama.duckquery.net.response.api.RelatedTopic;
+import net.nakama.duckquery.net.response.api.ResponseType;
 import net.nakama.duckquery.net.response.api.Result;
 import net.nakama.duckquery.net.response.api.Topic;
 
 import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-
-
-
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 
 
 public class ResponseParser {
+	
+	public static ZeroClickResponse parseWithMapper(String json) throws Exception {
+		ZeroClickResponse zr = new ZeroClickResponse();
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		JsonNode rootNode = mapper.readValue(json, JsonNode.class);
+		
+		zr.setAbstractHtml(rootNode.path("Abstract").getTextValue());
+		zr.setAbstractText(rootNode.path("AbstractText").getTextValue());
+		zr.setAbstractSource(rootNode.path("AbstractSource").getTextValue());
+		zr.setAbstractURL(rootNode.path("AbstractURL").getTextValue());
+		zr.setImage(rootNode.path("Image").getTextValue());
+		zr.setHeading(rootNode.path("Heading").getTextValue());
+		zr.setAnswer(rootNode.path("Answer").getTextValue());
+		zr.setRedirect(rootNode.path("Redirect").getTextValue());
+		zr.setAnswerType(rootNode.path("AnswerType").getTextValue());
+		zr.setDefinition(rootNode.path("Definition").getTextValue());
+		zr.setDefinitionSource(rootNode.path("DefinitionSource").getTextValue());
+		zr.setDefinitionURL(rootNode.path("DefinitionURL").getTextValue());
+		zr.setType(ResponseType.fromString(rootNode.path("Type").getTextValue()));
+		
+		JsonNode jrt = rootNode.path("RelatedTopics");
+		
+		Iterator<JsonNode> it = jrt.getElements();
+		JsonNode node;		
+		
+		while (it.hasNext()) {
+			node = it.next();
+			
+			JsonNode topic = node.get("Topics");
+			
+			if (topic == null) {
+				System.out.println("res");
+				
+			} else {
+				System.out.println("top");
+			}
+			
+		}
+		
+		return zr;
+	}
 
 	public static ZeroClickResponse parse(String json) throws Exception {
-		
-		//ObjectMapper mapper = new ObjectMapper();
-		//Map<String, Object> m = 
 		
 		JsonFactory f = new JsonFactory();
 		JsonParser p = f.createJsonParser(json);
@@ -52,23 +90,11 @@ public class ResponseParser {
 		int i = 0;
 		
 		if (p.nextToken() == JsonToken.START_OBJECT) {
-			/*
-			while (p.nextToken() != null) {
-				System.out.println((++i) + p.getCurrentName());			
-				p.nextToken();
-			}
-			
-			*/
 			
 			while (p.nextToken() != JsonToken.END_OBJECT) {
 			
-				//System.out.println((++i) + p.getCurrentName());
-				
-				
 				fName = p.getCurrentName();
 				p.nextToken();
-				
-				System.out.println("FieldName: " + fName);
 				
 				try {  
 					if (fName != null) {
@@ -105,12 +131,8 @@ public class ResponseParser {
 							RelatedTopic rt = new RelatedTopic();
 							
 							while (p.nextToken() != JsonToken.END_ARRAY) {
-								
 								rt = parseResultAndTopics(p);
 							}
-							
-							//rt.setResults(results.toArray(new Result[]{}));
-							//rt.setTopics(t);
 							
 							zr.setRelatedTopics(rt);
 							
@@ -127,7 +149,7 @@ public class ResponseParser {
 							zr.setResults(results);
 							
 							break;	
-						case Type: zr.setType(p.getText());
+						case Type: zr.setType(ResponseType.fromString(p.getText()));
 						break;	
 						}
 					}
@@ -135,7 +157,6 @@ public class ResponseParser {
 		        	System.out.println("IllegalArgumentException");
 		        }  
 			}
-			
 			
 			p.close();
 		}
@@ -155,6 +176,7 @@ public class ResponseParser {
 		while (p.nextToken() != JsonToken.END_OBJECT) {
 			sName = p.getCurrentName();
 			result = new Result();
+			System.out.println("" + sName);
 			
 			if (sName != null) {
 				
@@ -164,9 +186,9 @@ public class ResponseParser {
 					r.add(parseResult(p, result));
 					
 				} else if (sName.equals("Topics")) {
-					p.nextToken();
+					p.nextToken(); // [
 					t.add(parseTopics(p));
-					p.nextToken();
+					//p.nextToken(); // ]
 				}				
 			}
 		}
@@ -221,7 +243,6 @@ public class ResponseParser {
 			}
 		}
 		
-		
 		return icon;
 	}
 	
@@ -240,14 +261,12 @@ public class ResponseParser {
 				p.nextToken();
 				r.setResultUrlText(p.getText());
 				results.add(parseResult(p, r));				
-				
 			}
-			
 		}
 		
 		// Next should be Topics and Name
-		p.nextToken();
-		p.nextToken();
+		p.nextToken(); // Don't know why I'm getting Topics as value here but...
+		p.nextToken(); // 
 		pName = p.getCurrentName();
 		
 		if (pName.equals("Name"))

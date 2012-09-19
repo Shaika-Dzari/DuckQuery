@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import net.nakama.duckquery.net.response.api.RelatedTopic;
+import net.nakama.duckquery.net.response.api.ResponseType;
 import net.nakama.duckquery.net.response.api.Result;
 
 public class ZeroClickResponse {
@@ -23,27 +24,7 @@ public class ZeroClickResponse {
 	// Info
 	private Calendar responseDate;
 	
-	/*
-	 {
-		Abstract: ""
-		AbstractText: ""
-		AbstractSource: ""
-		AbstractURL: ""
-		Image: ""
-		Heading: ""
-		Answer: ""
-		Redirect: ""
-		AnswerType: ""
-		Definition: ""
-		DefinitionSource: ""
-		DefinitionURL: ""
-		RelatedTopics: [ ]
-		Results: [ ]
-		Type: ""
-	 }
-	 */
 	// Api Fields
-	
 	/**
 	 * @note api name = abstract
 	 */
@@ -65,7 +46,7 @@ public class ZeroClickResponse {
 	 */
 	private RelatedTopic relatedTopics;
 	private List<Result> results = null;
-	private String type = null;
+	private ResponseType type = null;
 	
 	public ZeroClickResponse() {
 		this.responseDate = Calendar.getInstance();
@@ -270,14 +251,14 @@ public class ZeroClickResponse {
 	/**
 	 * @return the type
 	 */
-	public String getType() {
+	public ResponseType getType() {
 		return type;
 	}
 
 	/**
 	 * @param type the type to set
 	 */
-	public void setType(String type) {
+	public void setType(ResponseType type) {
 		this.type = type;
 	}
 
@@ -295,4 +276,24 @@ public class ZeroClickResponse {
 		this.results = results;
 	}
 	
+	@Override
+	public String toString() {
+		String s = "ZeroClickInfo[" + this.type + "]";
+		
+		if (this.relatedTopics != null) {
+			s += "[RelatedTopic";
+			if (this.relatedTopics.getResults() != null) 
+				s += "::Result(" + this.relatedTopics.getResults().size() + ")";
+			if (this.relatedTopics.getTopics() != null) 
+				s += "::Topics(" + this.relatedTopics.getTopics().size() + ")";
+			
+			s += "]";
+		}
+		
+		if (this.results != null) {
+			s += "[Results:::Result(" + this.results.size() + ")]"; 
+		}
+		
+		return s;
+	}
 }
