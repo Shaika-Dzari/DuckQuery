@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!-- 
+ build.xml
+  
+ This program is free software. It comes without any warranty, to
+ the extent permitted by applicable law. You can redistribute it
+ and/or modify it under the terms of the Do What The Fuck You Want
+ To Public License, Version 2, as published by Sam Hocevar. 
+ See http://sam.zoy.org/wtfpl/COPYING for more details. 
+ 
+ @author shaika-dzari
+ @since 2012-09-20
+ 
+-->
+<project name="DuckQuery" basedir="." default="jar">
+    
+    <description>A Duckduckgo java library.</description>
+    
+    <property name="version" value="0.9"/>
+    <property name="src.dir" location="src" />
+  	<property name="build.dir" location="bin" />
+  	<property name="dist.dir" location="dist" />
+  	<property name="lib.dir" location="lib" />
+  	
+  	<path id="build.classpath">
+	    <fileset dir="${lib.dir}"><include name="**/*.jar" /></fileset>
+	</path>
+    
+  	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+	
+  	<!-- Creates the directories -->
+  	<target name="makedir">
+	    <mkdir dir="${build.dir}" />
+	    <mkdir dir="${dist.dir}" />
+  	</target>
+  	
+  	<target name="compile" depends="clean, makedir">
+    	<javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="build.classpath" includeantruntime="false" />
+	</target>
+	
+  	<target name="jar" depends="compile">
+		<jar destfile="${dist.dir}\DuckQuery-${version}.jar" basedir="${build.dir}" />
+	</target>
+    
+    <target name="build">
+        
+    </target>
+    
+</project>
