@@ -15,29 +15,26 @@ package net.nakama.duckquery.net.response;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
-import net.nakama.duckquery.net.response.api.DDGApiField;
 import net.nakama.duckquery.net.response.api.Icon;
 import net.nakama.duckquery.net.response.api.RelatedTopic;
 import net.nakama.duckquery.net.response.api.ResponseType;
 import net.nakama.duckquery.net.response.api.Result;
 import net.nakama.duckquery.net.response.api.Topic;
 
-import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
-
 
 public class ResponseParser {
 	
-	public static ZeroClickResponse parseWithMapper(String json) throws Exception {
+	public static ZeroClickResponse parse(String json) throws Exception {
 		ZeroClickResponse zr = new ZeroClickResponse();
+		RelatedTopic rt = new RelatedTopic();
 		
 		ObjectMapper mapper = new ObjectMapper();
+		JsonNode arrayNode;
+		JsonNode node;
+		Iterator<JsonNode> it;
 		
 		JsonNode rootNode = mapper.readValue(json, JsonNode.class);
 		
@@ -55,225 +52,73 @@ public class ResponseParser {
 		zr.setDefinitionURL(rootNode.path("DefinitionURL").getTextValue());
 		zr.setType(ResponseType.fromString(rootNode.path("Type").getTextValue()));
 		
-		JsonNode jrt = rootNode.path("RelatedTopics");
 		
-		Iterator<JsonNode> it = jrt.getElements();
-		JsonNode node;		
+		// Related Topic
+		arrayNode = rootNode.path("RelatedTopics");
+		it = arrayNode.getElements();
+				
 		
 		while (it.hasNext()) {
 			node = it.next();
 			
-			JsonNode topic = node.get("Topics");
+			JsonNode childNode = node.get("Topics");
 			
-			if (topic == null) {
-				System.out.println("res");
-				
+			// If topics is null, it means we have a Result
+			if (childNode == null) { 
+				rt.getResults().add(parseResultNode(node));
 			} else {
-				System.out.println("top");
+				rt.getTopics().add(parseTopicNode(node, childNode));
 			}
-			
 		}
 		
-		return zr;
-	}
-
-	public static ZeroClickResponse parse(String json) throws Exception {
+		zr.setRelatedTopics(rt);
 		
-		JsonFactory f = new JsonFactory();
-		JsonParser p = f.createJsonParser(json);
-		ZeroClickResponse zr = new ZeroClickResponse();
-		String fName;
-		List<Result> results;
+		// Results
+		zr.setResults(new ArrayList<Result>());
+		arrayNode = rootNode.path("Results");
+		it = arrayNode.getElements();
 		
-		DDGApiField field;
-		
-		int i = 0;
-		
-		if (p.nextToken() == JsonToken.START_OBJECT) {
-			
-			while (p.nextToken() != JsonToken.END_OBJECT) {
-			
-				fName = p.getCurrentName();
-				p.nextToken();
-				
-				try {  
-					if (fName != null) {
-						
-						field = DDGApiField.valueOf(fName);
-						
-						switch (field) {
-						case Abstract: 	zr.setAbstractHtml(p.getText());
-						break;
-						case AbstractText: zr.setAbstractText(p.getText());
-						break;
-						case AbstractSource: zr.setAbstractSource(p.getText());
-						break;
-						case AbstractURL: zr.setAbstractURL(p.getText());
-						break;
-						case Image: zr.setImage(p.getText());
-						break;
-						case Heading: zr.setHeading(p.getText());
-						break;
-						case Answer: zr.setAnswer(p.getText());
-						break;
-						case Redirect: zr.setRedirect(p.getText());
-						break;
-						case AnswerType: zr.setAnswerType(p.getText());
-						break;
-						case Definition: zr.setDefinition(p.getText());
-						break;
-						case DefinitionSource: zr.setDefinitionSource(p.getText());
-						break;
-						case DefinitionURL: zr.setDefinitionURL(p.getText());
-						break;	
-						case RelatedTopics: 
-							
-							RelatedTopic rt = new RelatedTopic();
-							
-							while (p.nextToken() != JsonToken.END_ARRAY) {
-								rt = parseResultAndTopics(p);
-							}
-							
-							zr.setRelatedTopics(rt);
-							
-							break;	
-						case Results: 
-							
-							results = new ArrayList<Result>();
-							
-							while (p.nextToken() != JsonToken.END_ARRAY) {
-								System.out.println((++i) + p.getCurrentName());
-								results.add(parseResult(p, new Result()));
-							}
-							
-							zr.setResults(results);
-							
-							break;	
-						case Type: zr.setType(ResponseType.fromString(p.getText()));
-						break;	
-						}
-					}
-		        } catch (IllegalArgumentException e) {  
-		        	System.out.println("IllegalArgumentException");
-		        }  
-			}
-			
-			p.close();
+		while (it.hasNext()) {
+			node = it.next();
+			zr.getResults().add(parseResultNode(node));
 		}
 		
 		return zr;
 	}
 	
-	private static RelatedTopic parseResultAndTopics(JsonParser p) throws Exception {
-		
-		RelatedTopic rt = new RelatedTopic();
-		List<Topic> t = new ArrayList<Topic>();
-		List<Result> r = new ArrayList<Result>();
-		
+	private static Result parseResultNode(JsonNode node) {
 		Result result = new Result();
-		String sName;
 		
-		while (p.nextToken() != JsonToken.END_OBJECT) {
-			sName = p.getCurrentName();
-			result = new Result();
-			System.out.println("" + sName);
-			
-			if (sName != null) {
-				
-				if (sName.equals("Result")) {
-					p.nextToken();
-					result.setResultUrlText(p.getText());
-					r.add(parseResult(p, result));
-					
-				} else if (sName.equals("Topics")) {
-					p.nextToken(); // [
-					t.add(parseTopics(p));
-					//p.nextToken(); // ]
-				}				
-			}
-		}
-		
-		rt.setTopics(t);
-		rt.setResults(r);
-		
-		return rt;
-	}
-	
-	private static Result parseResult(JsonParser p, Result r) throws Exception {
-		
-		String sName = "";
-		
-		while (p.nextToken() != JsonToken.END_OBJECT) {
-			sName = p.getCurrentName();
-			
-			if (sName.equals("Result")) {
-				p.nextToken();
-				r.setResultUrlText(p.getText());
-			} else if (sName.equals("FirstURL")) {
-				p.nextToken();
-				r.setUrl(p.getText());
-			} else if (sName.equals("Text")) {
-				p.nextToken();
-				r.setText(p.getText());
-			} else if (sName.equals("Icon")) {
-				p.nextToken();
-				r.setIcon(parseIcon(p));
-			}
-		}
-		
-		return r;
-	}
-	
-	private static Icon parseIcon(JsonParser p) throws Exception {
 		Icon icon = new Icon();
-		String sName;
+		JsonNode childNode = node.get("Icon");
 		
-		while (p.nextToken() != JsonToken.END_OBJECT) {
-			sName = p.getCurrentName();
-			
-			if (sName.equals("URL")) {
-				p.nextToken();
-				icon.setUrl(p.getText());
-			} else if (sName.equals("Height")) {
-				p.nextToken();
-				icon.setHeight(p.getValueAsInt());
-			} else if (sName.equals("Width")) {
-				p.nextToken();
-				icon.setWidth(p.getValueAsInt());
-			}
-		}
+		result.setResultUrlText(node.get("Result").getTextValue());
+		result.setUrl(node.get("FirstURL").getTextValue());
+		result.setText(node.get("Text").getTextValue());
 		
-		return icon;
+		icon.setUrl(childNode.get("URL").getTextValue());
+		icon.setWidth(childNode.get("Height").getIntValue());
+		icon.setHeight(childNode.get("Width").getIntValue());
+		
+		result.setIcon(icon);
+		
+		return result;
 	}
 	
-	private static Topic parseTopics(JsonParser p) throws Exception {
-		Topic t = new Topic();
-		List<Result> results = new ArrayList<Result>();
-		String pName;
-		Result r;
+	private static Topic parseTopicNode(JsonNode parentNode, JsonNode childNode) {
+		Topic topic = new Topic();
 		
-		while (p.nextToken() != JsonToken.END_ARRAY) {
-			pName = p.getCurrentName();
-			
-			if (pName != null && pName.equals("Result")) {
-				
-				r = new Result();
-				p.nextToken();
-				r.setResultUrlText(p.getText());
-				results.add(parseResult(p, r));				
-			}
+		topic.setName(parentNode.get("Name").getTextValue());
+		
+		Iterator<JsonNode> it = childNode.getElements();
+		JsonNode node;		
+		
+		while (it.hasNext()) {
+			node = it.next();
+			topic.getResults().add(parseResultNode(node));
 		}
 		
-		// Next should be Topics and Name
-		p.nextToken(); // Don't know why I'm getting Topics as value here but...
-		p.nextToken(); // 
-		pName = p.getCurrentName();
 		
-		if (pName.equals("Name"))
-			t.setName(p.getText());
-		
-		t.setResults(results);
-		
-		return t;
+		return topic;
 	}
 }

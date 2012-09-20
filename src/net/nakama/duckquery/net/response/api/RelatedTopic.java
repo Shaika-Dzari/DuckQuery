@@ -12,12 +12,18 @@
  */ 
 package net.nakama.duckquery.net.response.api;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RelatedTopic {
 
 	private List<Result> results = null;
 	private List<Topic> topics = null;
+	
+	public RelatedTopic() {
+		results = new ArrayList<Result>();
+		topics = new ArrayList<Topic>();
+	}
 	
 	/**
 	 * @return the results
