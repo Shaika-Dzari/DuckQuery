@@ -27,8 +27,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class ResponseParser {
 	
-	public static ZeroClickResponse parse(String json) throws Exception {
-		ZeroClickResponse zr = new ZeroClickResponse();
+	public static ZeroClickResponse parse(String userquery, String json) throws Exception {
+		ZeroClickResponse zr = new ZeroClickResponse(userquery);
 		RelatedTopic rt = new RelatedTopic();
 		
 		ObjectMapper mapper = new ObjectMapper();

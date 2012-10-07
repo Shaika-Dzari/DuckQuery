@@ -27,6 +27,6 @@ public class DuckQuery {
 	
 	public ZeroClickResponse doQuery(String query) throws Exception {
 		String json = doJsonQuery(query);
-		return ResponseParser.parse(json);
+		return ResponseParser.parse(query, json);
 	}
 }

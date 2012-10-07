@@ -12,17 +12,20 @@
  */ 
 package net.nakama.duckquery.net.response;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import net.nakama.duckquery.net.response.api.RelatedTopic;
 import net.nakama.duckquery.net.response.api.ResponseType;
 import net.nakama.duckquery.net.response.api.Result;
+import net.nakama.duckquery.net.response.api.Topic;
 
 public class ZeroClickResponse {
 
 	// Info
 	private Calendar responseDate;
+	private String userQuery;
 	
 	// Api Fields
 	/**
@@ -48,7 +51,8 @@ public class ZeroClickResponse {
 	private List<Result> results = null;
 	private ResponseType type = null;
 	
-	public ZeroClickResponse() {
+	public ZeroClickResponse(String userQuery) {
+		this.userQuery = userQuery;
 		this.responseDate = Calendar.getInstance();
 	}
 
@@ -276,6 +280,58 @@ public class ZeroClickResponse {
 		this.results = results;
 	}
 	
+	public boolean isBang() {
+		
+		if (this.userQuery.matches(".*![a-zA-Z]+.*")) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public List<Result> getFlatResults() {
+		
+		List<Result> flatResults = new ArrayList<Result>();
+		Result result;
+		
+		// #1 Abstract
+		if (this.abstractURL != null) {
+			result = new Result();
+			result.setUrl(this.abstractURL);
+			
+			if (this.abstractText != null) {
+				result.setText(this.abstractText);
+			} else if (this.definition != null) {
+				result.setText(this.definition);
+			} else if (this.heading != null) {
+				result.setText(this.heading);
+			}
+			flatResults.add(result);
+		}
+		
+		// #2 Results
+		if (this.results != null && this.results.size() > 0) {
+			flatResults.addAll(this.results);
+		}
+		
+		if (this.relatedTopics != null) {
+			
+			// #3 RelatedTopics => Results
+			if (this.relatedTopics.getResults() != null && this.relatedTopics.getResults().size() > 0) 
+				flatResults.addAll(this.relatedTopics.getResults());
+			
+			// #4 relatedTopics => Topics
+			if (this.relatedTopics.getTopics() != null && this.relatedTopics.getTopics().size() > 0) {
+				for (Topic t : this.relatedTopics.getTopics()) {
+					if (t.getResults() != null && t.getResults().size() > 0)
+						flatResults.addAll(t.getResults());
+				}
+			}
+		}
+		
+		return flatResults;
+	}
+	
 	@Override
 	public String toString() {
 		String s = "ZeroClickInfo[" + this.type + "]";
@@ -295,5 +351,12 @@ public class ZeroClickResponse {
 		}
 		
 		return s;
+	}
+
+	/**
+	 * @return the userQuery
+	 */
+	public String getUserQuery() {
+		return userQuery;
 	}
 }
