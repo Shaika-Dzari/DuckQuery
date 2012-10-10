@@ -295,15 +295,15 @@ public class ZeroClickResponse {
 		Result result;
 		
 		// #1 Abstract
-		if (this.abstractURL != null) {
+		if (!"".equals(this.abstractURL)) {
 			result = new Result();
 			result.setUrl(this.abstractURL);
 			
-			if (this.abstractText != null) {
+			if (!"".equals(this.abstractText)) {
 				result.setText(this.abstractText);
-			} else if (this.definition != null) {
+			} else if (!"".equals(this.definition)) {
 				result.setText(this.definition);
-			} else if (this.heading != null) {
+			} else if (!"".equals(this.heading)) {
 				result.setText(this.heading);
 			}
 			flatResults.add(result);
