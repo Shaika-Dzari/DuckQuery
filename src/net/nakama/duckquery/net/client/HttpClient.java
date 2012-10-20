@@ -28,6 +28,7 @@ public class HttpClient {
 	    String l;
 	    
 		try {
+			
 			url = new URL(query);
 			hc = (HttpURLConnection) url.openConnection();
 			hc.setRequestMethod("GET");
@@ -48,9 +49,5 @@ public class HttpClient {
 		}
 		
 		return sb.toString();
-	}
-	
-	public String escape(String args) throws Exception {
-		return URLEncoder.encode(args, "UTF-8");
 	}
 }
