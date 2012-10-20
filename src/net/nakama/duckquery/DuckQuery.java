@@ -15,6 +15,7 @@ package net.nakama.duckquery;
 import net.nakama.duckquery.net.client.CallOption;
 import net.nakama.duckquery.net.client.DuckQueryBuilder;
 import net.nakama.duckquery.net.client.HttpClient;
+import net.nakama.duckquery.net.request.Request;
 import net.nakama.duckquery.net.response.ResponseParser;
 import net.nakama.duckquery.net.response.ZeroClickResponse;
 
@@ -27,24 +28,22 @@ public class DuckQuery {
 	public DuckQuery() {
 		queryBuilder = new DuckQueryBuilder();
 		httpClient = new HttpClient();
-		
 	}
 	
 	public String doSimpleQuery(String query) throws Exception {
-		return doSimpleQuery(query, CallOption.standardOption());
+		return doSimpleQuery(new Request(query, CallOption.standardOption()));
 	}
 	
-	public String doSimpleQuery(String query, CallOption options) throws Exception {
-		return queryBuilder.buildAndCall(query, options, httpClient);
+	public String doSimpleQuery(Request request) throws Exception {
+		return queryBuilder.buildAndCall(request.query, request.options, httpClient);
 	}
 	
 	public ZeroClickResponse doQuery(String query) throws Exception {
-		return doQuery(query, CallOption.standardOption());
+		return doQuery(new Request(query, CallOption.standardOption()));
 	}
 	
-	
-	public ZeroClickResponse doQuery(String query, CallOption options) throws Exception {
-		String json = doSimpleQuery(query, options);
-		return ResponseParser.parse(query, json);
+	public ZeroClickResponse doQuery(Request request) throws Exception {
+		String json = doSimpleQuery(request);
+		return ResponseParser.parse(request.query, json);
 	}
 }
