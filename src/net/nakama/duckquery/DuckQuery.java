@@ -31,7 +31,7 @@ public class DuckQuery {
 	}
 	
 	public String doSimpleQuery(String query) throws Exception {
-		return doSimpleQuery(new Request(query, CallOption.standardOption()));
+		return doSimpleQuery(new Request(query, new CallOption()));
 	}
 	
 	public String doSimpleQuery(Request request) throws Exception {
@@ -39,7 +39,7 @@ public class DuckQuery {
 	}
 	
 	public ZeroClickResponse doQuery(String query) throws Exception {
-		return doQuery(new Request(query, CallOption.standardOption()));
+		return doQuery(new Request(query, new CallOption()));
 	}
 	
 	public ZeroClickResponse doQuery(Request request) throws Exception {

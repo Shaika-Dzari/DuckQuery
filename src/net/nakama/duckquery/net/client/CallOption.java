@@ -17,8 +17,6 @@ import java.util.Set;
 
 public class CallOption {
 	
-	private static CallOption stdOption;
-	
 	private Set<DuckDuckGoOption> options;
 	
 	public enum DuckDuckGoOption {
@@ -43,13 +41,6 @@ public class CallOption {
 			return this.urlParam;
 		}
 	}
-	
-	public static CallOption standardOption() {
-		if (stdOption == null)
-			stdOption = new CallOption();
-		return stdOption;
-	}
-	
 	
 	public CallOption() {
 		options = EnumSet.of(DuckDuckGoOption.FORMAT_JSON, DuckDuckGoOption.NO_REDIRECT, DuckDuckGoOption.NO_HTML);
